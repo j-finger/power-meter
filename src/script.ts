@@ -55,7 +55,7 @@ class state {
     static data: StateData = {} as StateData;
 
     // TODO: make this configurable
-    static max_data = 60 * 60; // ~1 hour
+    static max_data = 60 * 60 * 12; // ~12 hour
 
     // onDisconnectCallback
     static async stop(e: Event) {
