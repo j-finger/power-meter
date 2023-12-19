@@ -1,6 +1,8 @@
 // buttons
 const goButton = document.getElementById("go")!;
 const pauseElem = document.getElementById("pause")!;
+const lengthNumber = document.getElementById("length")! as HTMLInputElement;
+const reconnectSwitch = document.getElementById("reconnect")! as HTMLInputElement;
 
 // dialog
 const dialogElem = document.getElementById('dialog')! as HTMLDialogElement;
@@ -30,6 +32,10 @@ const usbStatsElem = document.getElementById("usb_stats")!;
 
 const graphDiv = 'graph';
 
+function sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 interface StateData {
     last_: Packet | null,
     history: Packet[],
@@ -53,15 +59,31 @@ class state {
     static meter = new Meter();
     static data_paused = false;
     static data: StateData = {} as StateData;
+    static max_data = 60 * 60; // ~1 hour
+    static device: BluetoothDevice | null = null;
+    static reconnect = reconnectSwitch.checked;
 
-    // TODO: make this configurable
-    static max_data = 60 * 60 * 12; // ~12 hour
+    // Set measure duration
+    static async setLength() {
+        console.log("set length")
+        // set max_data with cast int to string
+        this.max_data = 60 * 60 * +lengthNumber.value;
+    }
 
     // onDisconnectCallback
     static async stop(e: Event) {
         console.log("state stop");
         // set button state
         goButton.innerText = "Start";
+        // restart with last know device
+        if (state.device !== null && state.reconnect) {
+            console.log("reconnecting to device with 2.5s delay");
+            await sleep(2500);
+            state.meter.start(state.device).catch(error => {
+                console.error("port start error: ", error);
+                showError(error);
+            });
+        }
     }
 
     // onStartCallback
@@ -220,6 +242,7 @@ function Go() {
             }]
         })
             .then(device => {
+                state.device = device;
                 goButton.innerText = "Starting....";
                 console.log("got device: ", device.name, device.id);
                 //console.log(device);
@@ -393,4 +416,17 @@ function Save() {
 
     link.click(); // This will download the data file named filename.
     link.remove();
+}
+
+function setLength() {
+    if (state.meter.running) {
+        console.log("Pause or stop to make measurement durations");
+        return;
+    }
+    state.setLength()
+}
+
+function setReconnect() {
+    console.log("set reconnect");
+    state.reconnect = reconnectSwitch.checked;
 }

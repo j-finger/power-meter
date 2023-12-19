@@ -78,14 +78,15 @@ class Meter {
         // Attempts to connect to remote GATT Server.
         return this.device.gatt.connect()
             .then(server => {
-                //console.log("server: ", server);
+                // console.log("server: ", server);
                 return server.getPrimaryService(UUID_SERVICE);
             })
             .then(service => {
-                //console.log("service:", service);
+                // console.log("service:", service);
                 return service.getCharacteristic(UUID_NOTIFY);
             })
             .then(characteristic => {
+                // console.log("characteristic:", characteristic);
                 this.characteristic = characteristic;
                 return characteristic.startNotifications();
             })

@@ -5,6 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.min.css">
+  <link rel="stylesheet" href="./css/style.css">
 
   <title>USB BLE Power Meter</title>
 </head>
@@ -23,6 +24,13 @@
   <button id="reset" onclick="Reset()">Reset</button>
   <button id="pause" onclick="Pause()">Pause</button>
   <button id="save" onclick="Save()">Save</button>
+  <input type="number" id="length" value="1"/>
+  <button id="setLength" onclick="setLength()">Set measure length (h)</button>
+  <label>Reconnect if signal lost: </label>
+  <label class="switch">
+    <input type="checkbox" id="reconnect" checked onchange="setReconnect()">
+    <span class="slider round"></span>
+  </label>
 
   <table>
     <thead>

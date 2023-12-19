@@ -1,6 +1,15 @@
-# [USB BLE Power Meter](https://lanrat.github.io/usb-meter/)
+# USB BLE Power Meter
 
-[lanrat.github.io/usb-meter](https://lanrat.github.io/usb-meter/)
+### Fork
+
+From [lanrat.github.io/usb-meter](https://lanrat.github.io/usb-meter/)
+
+###### Changes
+
+- Made measuring length variable
+- Add reconnect logic
+- Add reconnect toggle
+- Add new css file
 
 ## Information
 
