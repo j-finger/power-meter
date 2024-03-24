@@ -1,12 +1,5 @@
 // TODO List
 
-// - Phase 2
-// - Print device type i.e. AC vs DC vs USB
-
-// Phase 3
-// - Add custom filename field for saved data
-// - Autosave and download after set time/end of measurement
-
 // Phase 4
 // - Add counter for recording the total power drawn over the period
 // - Better default graph layout before data is received
@@ -15,10 +8,12 @@
 // - Better function names and comments
 
 /* Global Values and Variables*/
-// Titling
+// Title
 const windowDescription = document.getElementById("window-description")!;
 const titleDescription = document.getElementById("title-description")!;
 
+// Filenaming
+const filenameInput = document.getElementById('filename') as HTMLInputElement;
 
 // Buttons
 const goButton = document.getElementById("go")!;
@@ -104,7 +99,7 @@ class state {
     static max_data = 60 * 60 * 12; // ~12 hour
     static device: BluetoothDevice | null = null;
     static reconnect = reconnectSwitch.checked;
-
+    static data_saved = false;  // Add this line
     // Set measure duration
     static async setLength() {
         console.log("set length")
@@ -204,6 +199,13 @@ class state {
                 row.style.backgroundColor = 'white';  // Replace with the actual color for odd rows
             }
         });
+
+
+        // Autosave if the sampling duration has ended
+        if (this.data.history.length >= this.max_data && !this.data_saved) {
+            Save();  // Call the Save function
+            this.data_saved = true;  // Set the flag to true
+        }
 
         // Plot Graph
         Plotly.extendTraces(graphDiv, {
@@ -543,7 +545,14 @@ function Save() {
     }
     const csv_columns: Array<string> = ["time", "voltage", "current", "power", "powerFactor", "frequency", "price", "resistance", "capacity", "energy", "data1", "data2", "temp", "duration"];
     // const csv_columns: Array<string> = ["time", "voltage", "current", "power", "resistance", "capacity", "energy", "data1", "data2", "temp", "duration",];
-    const filename: string = "data.csv";
+    
+    // File Naming
+    const filenameInput = document.getElementById('filename') as HTMLInputElement;
+    let filename: string = filenameInput.value || "data";
+    filename = filename.replace(/[<>:"/\\|?*]+/g, ''); // Remove illegal characters from filename
+    if (!filename.endsWith('.csv')) { // Append .csv if not already there
+        filename += '.csv';
+    }   
 
     var headers: Array<string> = [];
 

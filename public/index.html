@@ -19,13 +19,10 @@
   <p>View <a href="https://github.com/lanrat/usb-meter/blob/main/README.md">README</a> for more Information.</p>
 
   <hr>
-  <!-- Add in custom filename field -->
   <button id="go" onclick="Go()">Connect</button>
   <button id="reset" onclick="Reset()">Reset</button>
   <button id="pause" onclick="Pause()">Pause</button>
   <button id="save" onclick="Save()">Save</button>
-  <br>
-  <br>
   <input type="number" id="length" value="12"/>
   <button id="setLength" onclick="setLength()">Set measure length (h)</button>
   <label>Reconnect if signal lost: </label>
@@ -33,7 +30,9 @@
     <input type="checkbox" id="reconnect" checked onchange="setReconnect()">
     <span class="slider round"></span>
   </label>
-
+  <br>  
+  <label for="filename">Filename:</label>
+  <input type="text" id="filename" name="filename" value="data">
   <table>
     <thead>
       <tr>
