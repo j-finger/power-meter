@@ -1,11 +1,8 @@
 // TODO List
-
-// Phase 4
 // - Add counter for recording the total power drawn over the period
-// - Better default graph layout before data is received
-// - Add more graph options for better visualization - Reactive power, apparent power, power factor, etc.
-// - Change editing from fork to pull request
 // - Better function names and comments
+// - Add a function to convert the time from seconds to a more readable format
+// - Change output file headers based on device type
 
 /* Global Values and Variables*/
 // Title
@@ -54,7 +51,7 @@ const temperatureStatsElem = document.getElementById("temperature_stats")!;
 const timeStatsElem = document.getElementById("time_stats")!;
 const usbStatsElem = document.getElementById("usb_stats")!;
 
-/* Row Display Options */
+// Row Display Options
 // AC Rows
 const rowPowerFactor = document.getElementById("row-powerFactor")!;
 const rowFrequency = document.getElementById("row-frequency")!;
@@ -65,10 +62,9 @@ const rowData = document.getElementById("row-data")!;
 
 // Graph Display Options
 const graphVisibility = document.getElementById("graph")!;
-
 const graphDiv = 'graph';
 
-/* Functions */
+/* Functionality */
 function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -163,10 +159,11 @@ class state {
         this.updateStats(p);
         this.last = p;
 
-        // add to graph
-        // Add AC variables and check for DC
+        // AC/DC variables visability
         if (p.type == DEVICE_TYPE.AC) {
+            // AC graph variable setting
             var data = [[p.voltage], [p.current], [p.power], [p.powerFactor], [p.energy], [p.resistance], [p.temp]];
+            // Changing HTML Display Options
             titleDescription.innerText = windowDescription.innerText = "AC Power Meter";
             rowPowerFactor.classList.remove('hidden');
             rowFrequency.classList.remove('hidden');
@@ -177,7 +174,9 @@ class state {
             graphVisibility.classList.remove('hidden');
         }
         else if (p.type == DEVICE_TYPE.DC || p.type == DEVICE_TYPE.USB){
+            // DC/USB graph variable setting
             var data = [[p.voltage], [p.current], [p.power], [p.powerFactor], [p.energy], [p.capacity], [p.resistance], [p.temp], [p.data1], [p.data2]];
+            // Changing HTML Display Options
             titleDescription.innerText = windowDescription.innerText = "USB/DC Power Meter";
             rowCapacity.classList.remove('hidden');
             rowData.classList.remove('hidden');
@@ -186,6 +185,7 @@ class state {
             rowPrice.classList.add('hidden');
         }
         else {
+            // Unknown device type graph variable setting
             var data = [[p.voltage], [p.current], [p.power], [p.powerFactor], [p.frequency], [p.energy], [p.capacity], [p.resistance], [p.temp], [p.data1], [p.data2]];
         };
 
@@ -204,7 +204,7 @@ class state {
         // Autosave if the sampling duration has ended
         if (this.data.history.length >= this.max_data && !this.data_saved) {
             Save();  // Call the Save function
-            this.data_saved = true;  // Set the flag to true
+            this.data_saved = true;  // Set the save flag to true
         }
 
         // Plot Graph
@@ -387,6 +387,8 @@ function initPlot() {
         displaylogo: false,
         responsive: true,
     };
+    // Update graph based on device type
+    // DC graph variables
      if (DEVICE_TYPE.DC || DEVICE_TYPE.USB) {
         Plotly.newPlot(graphDiv, [{
             name: "Volts",
@@ -459,6 +461,8 @@ function initPlot() {
         },
         ], layout, config);
     };
+
+    // AC graph variables
     if(DEVICE_TYPE.AC) {
         Plotly.newPlot(graphDiv, [{
             name: "Volts",
@@ -536,14 +540,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     initPlot();
 });
 
-// Parse time checking string to more readable format
 function Save() {
     if (!state.last) {
         // no data
         showError("No data yet");
         return;
     }
-    const csv_columns: Array<string> = ["time", "voltage", "current", "power", "powerFactor", "frequency", "price", "resistance", "capacity", "energy", "data1", "data2", "temp", "duration"];
+    const csv_columns: Array<string> = ["time", "voltage", "current", "power", "powerFactor", "frequency", "resistance", "capacity", "energy", "data1", "data2", "temp", "duration"];
     // const csv_columns: Array<string> = ["time", "voltage", "current", "power", "resistance", "capacity", "energy", "data1", "data2", "temp", "duration",];
     
     // File Naming
@@ -584,7 +587,7 @@ function Save() {
     link.setAttribute("download", filename);
     document.body.appendChild(link); // Required for FF
 
-    link.click(); // This will download the data file named filename.
+    link.click(); // This will download the data file
     link.remove();
 }
 
