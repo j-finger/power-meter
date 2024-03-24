@@ -6,12 +6,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.min.css">
   <link rel="stylesheet" href="./css/style.css">
-
-  <title>USB BLE Power Meter</title>
+  <!-- TODO Include "BLE/Wifi" in title -->
+  <title>USB BLE/Wifi Power Meter</title>
 </head>
 
 <body>
-  <h1>USB BLE Power Meter</h1>
+  <h1>USB BLE/Wifi Power Meter</h1>
   <h2 id="warnBlock">Your Browser does not appear to support WebBluetooth</h2>
   <h3>Information</h3>
   <p>Web app data logger for Atorch power meters.</p>
@@ -19,12 +19,12 @@
   <p>View <a href="https://github.com/lanrat/usb-meter/blob/main/README.md">README</a> for more Information.</p>
 
   <hr>
-
+  <!-- Add in custom filename field -->
   <button id="go" onclick="Go()">Connect</button>
   <button id="reset" onclick="Reset()">Reset</button>
   <button id="pause" onclick="Pause()">Pause</button>
   <button id="save" onclick="Save()">Save</button>
-  <input type="number" id="length" value="1"/>
+  <input type="number" id="length" value="4"/>
   <button id="setLength" onclick="setLength()">Set measure length (h)</button>
   <label>Reconnect if signal lost: </label>
   <label class="switch">
@@ -41,7 +41,8 @@
       </tr>
     </thead>
     <tbody>
-      <tr style="color: yellow">
+      <!-- TODO Update colours for better legibility and nicer look, include colour table in CSS file. Check that CSS is in the original repo/not just html -->
+      <tr style="color: orange">
         <td>Voltage</td>
         <td id="voltage"></td>
         <td id="voltage_stats"></td>
@@ -56,6 +57,21 @@
         <td id="power"></td>
         <td id="power_stats"></td>
       </tr>
+    <tr style="color: darkBlue">
+        <td>Power Factor</td>
+        <td id="powerFactor"></td>
+        <td id="powerFactor_stats"></td>
+    </tr>
+    <tr style="color: darkGreen">
+        <td>Frequency</td>
+        <td id="frequency"></td>
+        <td id="frequency_stats"></td>
+    </tr>
+    <tr style="color: darkRed">
+        <td>Price</td>
+        <td id="price"></td>
+        <td id="price_stats"></td>
+    </tr>
       <tr style="color: purple">
         <td>Energy</td>
         <td id="energy"></td>
@@ -82,7 +98,7 @@
         <td id="usb_stats"></td>
       </tr>
       <tr style="color: grey">
-        <td>Time</td>
+        <td>Time Online</td>
         <td id="time">000:00:00</td>
         <td id="time_stats">Samples: 0</td>
       </tr>

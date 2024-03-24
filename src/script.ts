@@ -1,28 +1,53 @@
-// buttons
+// TODO List
+
+// - Phase 2
+// - Add AC checking and removal of DC variables
+// - Print device type i.e. AC vs DC vs USB
+
+// Phase 3
+// - Add custom filename field for saved data
+// - Autosave and download after set time/end of measurement
+
+// Phase 4
+// - Add counter for recording the total power drawn over the period
+// - Better default graph layout before data is received
+// - Add more graph options for better visualization - Reactive power, apparent power, power factor, etc.
+// - Change editing from fork to pull request
+// - Better function names and comments
+
+/* Global Values and Variables*/
+// Buttons
 const goButton = document.getElementById("go")!;
 const pauseElem = document.getElementById("pause")!;
 const lengthNumber = document.getElementById("length")! as HTMLInputElement;
 const reconnectSwitch = document.getElementById("reconnect")! as HTMLInputElement;
 
-// dialog
+// Dialog
 const dialogElem = document.getElementById('dialog')! as HTMLDialogElement;
 const dialogMessageElem = document.getElementById('dialogError')!;
 const warnBlockElem = document.getElementById("warnBlock")!;
 
-// table values
+// Table values
 const voltageElem = document.getElementById("voltage")!;
 const currentElem = document.getElementById("current")!;
 const powerElem = document.getElementById("power")!;
+const powerFactorElem = document.getElementById("powerFactor")!;
+const frequencyElem = document.getElementById("frequency")!;
+const priceElem = document.getElementById("price")!;
 const energyElem = document.getElementById("energy")!;
 const capacityElem = document.getElementById("capacity")!;
 const resistanceElem = document.getElementById("resistance")!;
 const temperatureElem = document.getElementById("temperature")!;
 const timeElem = document.getElementById("time")!;
 const usbElem = document.getElementById("usb")!;
-// table stats
+
+// Table stats
 const voltageStatsElem = document.getElementById("voltage_stats")!;
 const currentStatsElem = document.getElementById("current_stats")!;
 const powerStatsElem = document.getElementById("power_stats")!;
+const powerFactorStatsElem = document.getElementById("powerFactor_stats")!;
+const frequencyStatsElem = document.getElementById("frequency_stats")!;
+const priceStatsElem = document.getElementById("price_stats")!;
 const energyStatsElem = document.getElementById("energy_stats")!;
 const capacityStatsElem = document.getElementById("capacity_stats")!;
 const resistanceStatsElem = document.getElementById("resistance_stats")!;
@@ -32,6 +57,7 @@ const usbStatsElem = document.getElementById("usb_stats")!;
 
 const graphDiv = 'graph';
 
+/* Functions */
 function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -59,7 +85,7 @@ class state {
     static meter = new Meter();
     static data_paused = false;
     static data: StateData = {} as StateData;
-    static max_data = 60 * 60; // ~1 hour
+    static max_data = 60 * 60 * 4; // ~4 hour
     static device: BluetoothDevice | null = null;
     static reconnect = reconnectSwitch.checked;
 
@@ -127,7 +153,14 @@ class state {
         this.last = p;
 
         // add to graph
-        var data = [[p.voltage], [p.current], [p.power], [p.energy], [p.capacity], [p.resistance], [p.temp], [p.data1], [p.data2]];
+        // Add AC variables and check for DC
+        if (p.type == DEVICE_TYPE.AC) {
+            var data = [[p.voltage], [p.current], [p.power], [p.powerFactor], [p.energy], [p.resistance], [p.temp]];
+        }
+        else {
+            var data = [[p.voltage], [p.current], [p.power], [p.powerFactor], [p.energy], [p.capacity], [p.resistance], [p.temp], [p.data1], [p.data2]];
+        };
+        
         Plotly.extendTraces(graphDiv, {
             y: data,
             x: new Array(data.length).fill([p.time]),
@@ -176,7 +209,7 @@ class state {
             temperatureElem.innerText = `${p.temp} °C / ${cToF(p.temp)} °F`;
             usbElem.innerText = `${p.data1}/${p.data2} V`;
             timeElem.innerText = `${p.duration}`;
-
+            
             // stats
             voltageStatsElem.innerText = `${this.data.stats.min.voltage} / ${this.data.stats.max.voltage} / ${this.data.stats.average.voltage}`;
             currentStatsElem.innerText = `${this.data.stats.min.current} / ${this.data.stats.max.current} / ${this.data.stats.average.current}`;
@@ -187,20 +220,35 @@ class state {
             temperatureStatsElem.innerText = `${this.data.stats.min.temp} / ${this.data.stats.max.temp} / ${this.data.stats.average.temp}`;
             usbStatsElem.innerText = `(${this.data.stats.min.data1}/${this.data.stats.min.data2}) / (${this.data.stats.max.data1}/${this.data.stats.max.data2}) / (${this.data.stats.average.data1}/${this.data.stats.average.data2})`;
             timeStatsElem.innerText = `Samples: ${this.data.history.length}`;
-
+            
+            // ac_check
+            if (p.type == DEVICE_TYPE.AC) {
+                // data
+                powerFactorElem.innerText = `${p.powerFactor}`;
+                frequencyElem.innerText = `${p.frequency} Hz`;
+                priceElem.innerText = `${p.price} $/kWh`;
+                // stats
+                powerFactorStatsElem.innerText = `${this.data.stats.min.powerFactor} / ${this.data.stats.max.powerFactor} / ${this.data.stats.average.powerFactor}`;
+                frequencyStatsElem.innerText = `${this.data.stats.min.frequency} / ${this.data.stats.max.frequency} / ${this.data.stats.average.frequency}`;
+                priceStatsElem.innerText = `${this.data.stats.min.price} / ${this.data.stats.max.price} / ${this.data.stats.average.price}`;
+            };
+            
             if (p.type == DEVICE_TYPE.DC) {
                 usbElem.innerText = 'N/A';
                 usbStatsElem.innerText = 'N/A';
                 energyElem.innerText = 'N/A';
                 energyStatsElem.innerText = 'N/A';
             }
-
+            // Add AC variable setting
         } else {
             console.log("clearing state");
             // data
             voltageElem.innerText = '';
             currentElem.innerText = '';
             powerElem.innerText = '';
+            powerFactorElem.innerText = '';
+            frequencyElem.innerText = '';
+            priceElem.innerText = '';
             energyElem.innerText = '';
             capacityElem.innerText = '';
             resistanceElem.innerText = '';
@@ -212,6 +260,9 @@ class state {
             voltageStatsElem.innerText = '';
             currentStatsElem.innerText = '';
             powerStatsElem.innerText = '';
+            powerFactorStatsElem.innerText = '';
+            frequencyStatsElem.innerText = '';
+            priceStatsElem.innerText = '';
             energyStatsElem.innerText = '';
             capacityStatsElem.innerText = '';
             resistanceStatsElem.innerText = '';
@@ -227,6 +278,7 @@ function showError(msg: string) {
     dialogElem.showModal();
 }
 
+// Add toggle option for this conversion
 function cToF(cTemp: number): number {
     return cTemp * 9 / 5 + 32;
 }
@@ -274,7 +326,10 @@ function Reset() {
     initPlot();
 }
 
+// Add power factor and frequency variables
+// Add AC checking and removal of DC variables
 function initPlot() {
+   
     const layout = {
         autosize: true,
         showlegend: true,
@@ -285,77 +340,148 @@ function initPlot() {
         displaylogo: false,
         responsive: true,
     };
-    Plotly.newPlot(graphDiv, [{
-        name: "Volts",
-        y: [],
-        x: [],
-        mode: 'lines',
-        line: { color: 'darkRed' },
-    },
-    {
-        name: "Current",
-        y: [],
-        x: [],
-        mode: 'lines',
-        line: { color: 'green' },
-    },
-    {
-        name: "Power",
-        y: [],
-        x: [],
-        mode: 'lines',
-        line: { color: 'red' },
-        visible: 'legendonly',
-    },
-    {
-        name: "Energy",
-        y: [],
-        x: [],
-        mode: 'lines',
-        line: { color: 'purple' },
-        visible: 'legendonly',
-    },
-    {
-        name: "Capacity",
-        y: [],
-        x: [],
-        mode: 'lines',
-        line: { color: 'lightblue' },
-        visible: 'legendonly',
-    },
-    {
-        name: "Resistance",
-        y: [],
-        x: [],
-        mode: 'lines',
-        line: { color: 'blue' },
-        visible: 'legendonly',
-    },
-    {
-        name: "Temperature",
-        y: [],
-        x: [],
-        mode: 'lines',
-        line: { color: 'turquoise' },
-        visible: 'legendonly',
-    },
-    {
-        name: "USB D-",
-        y: [],
-        x: [],
-        mode: 'lines',
-        line: { color: 'lightGreen' },
-        visible: 'legendonly',
-    },
-    {
-        name: "USB D+",
-        y: [],
-        x: [],
-        mode: 'lines',
-        line: { color: 'lightGreen' },
-        visible: 'legendonly',
-    },
-    ], layout, config);
+     if (DEVICE_TYPE.DC || DEVICE_TYPE.USB) {
+        Plotly.newPlot(graphDiv, [{
+            name: "Volts",
+            y: [],
+            x: [],
+            mode: 'lines',
+            line: { color: 'darkRed' },
+            visible: 'legendonly',
+        },
+        {
+            name: "Current",
+            y: [],
+            x: [],
+            mode: 'lines',
+            line: { color: 'green' },
+            visible: 'legendonly',
+        },
+        {
+            name: "Power",
+            y: [],
+            x: [],
+            mode: 'lines',
+            line: { color: 'red' },
+            // visible: 'legendonly',
+        },
+        {
+            name: "Power Factor",
+            y: [],
+            x: [],
+            mode: 'lines',
+            line: { color: 'orange' },
+            visible: 'legendonly',
+        },
+        {
+            name: "Energy",
+            y: [],
+            x: [],
+            mode: 'lines',
+            line: { color: 'purple' },
+            visible: 'legendonly',
+        },
+        {
+            name: "Capacity",
+            y: [],
+            x: [],
+            mode: 'lines',
+            line: { color: 'lightblue' },
+            visible: 'legendonly',
+        },
+        {
+            name: "Resistance",
+            y: [],
+            x: [],
+            mode: 'lines',
+            line: { color: 'blue' },
+            visible: 'legendonly',
+        },
+        {
+            name: "Temperature",
+            y: [],
+            x: [],
+            mode: 'lines',
+            line: { color: 'turquoise' },
+            visible: 'legendonly',
+        },
+        {
+            name: "USB D-",
+            y: [],
+            x: [],
+            mode: 'lines',
+            line: { color: 'lightGreen' },
+            visible: 'legendonly',
+        },
+        {
+            name: "USB D+",
+            y: [],
+            x: [],
+            mode: 'lines',
+            line: { color: 'lightGreen' },
+            visible: 'legendonly',
+        },
+        ], layout, config);
+    };
+    if(DEVICE_TYPE.AC) {
+        Plotly.newPlot(graphDiv, [{
+            name: "Volts",
+            y: [],
+            x: [],
+            mode: 'lines',
+            line: { color: 'darkRed' },
+            visible: 'legendonly',
+        },
+        {
+            name: "Current",
+            y: [],
+            x: [],
+            mode: 'lines',
+            line: { color: 'green' },
+            visible: 'legendonly',
+        },
+        {
+            name: "Power",
+            y: [],
+            x: [],
+            mode: 'lines',
+            line: { color: 'red' },
+            // visible: 'legendonly',
+        },
+        {
+            name: "Power Factor",
+            y: [],
+            x: [],
+            mode: 'lines',
+            line: { color: 'orange' },
+            visible: 'legendonly',
+        },
+        {
+            name: "Energy",
+            y: [],
+            x: [],
+            mode: 'lines',
+            line: { color: 'purple' },
+            visible: 'legendonly',
+        },
+        {
+            name: "Resistance",
+            y: [],
+            x: [],
+            mode: 'lines',
+            line: { color: 'blue' },
+            visible: 'legendonly',
+        },
+        {
+            name: "Temperature",
+            y: [],
+            x: [],
+            mode: 'lines',
+            line: { color: 'turquoise' },
+            visible: 'legendonly',
+        },
+        ], layout, config);
+    };
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -374,14 +500,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     initPlot();
 });
 
-
+// Parse time checking string to more readable format
 function Save() {
     if (!state.last) {
         // no data
         showError("No data yet");
         return;
     }
-    const csv_columns: Array<string> = ["time", "voltage", "current", "power", "resistance", "capacity", "energy", "data1", "data2", "temp", "duration",];
+    const csv_columns: Array<string> = ["time", "voltage", "current", "power", "powerFactor", "frequency", "price", "resistance", "capacity", "energy", "data1", "data2", "temp", "duration"];
+    // const csv_columns: Array<string> = ["time", "voltage", "current", "power", "resistance", "capacity", "energy", "data1", "data2", "temp", "duration",];
     const filename: string = "data.csv";
 
     var headers: Array<string> = [];

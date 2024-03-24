@@ -1,5 +1,9 @@
+// TODO
+// - Create resistance calculation for AC
+
 // packets
 // https://github.com/syssi/esphome-atorch-dl24/blob/main/components/atorch_dl24/button/__init__.py#L12
+// https://github.com/CursedHardware/atorch-console/blob/master/docs/protocol-design.md
 
 // BLE Service
 const UUID_SERVICE = "0000ffe0-0000-1000-8000-00805f9b34fb";
@@ -40,7 +44,7 @@ class Meter {
             console.error(`got empty characteristic`);
             return;
         }
-        //console.log('Received ', buf2hex(value.buffer));
+        // console.log('Received ', buf2hex(characteristic.value.buffer));
         try {
             var p = new Packet(characteristic.value);
         } catch (e) {
@@ -216,7 +220,7 @@ class Packet {
     current: number;
     power: number;
     resistance: number;
-    capacity: number;
+    capacity: number | null = null;
     energy: number;
     temp: number;
     duration: string;
@@ -228,6 +232,10 @@ class Packet {
     duration_raw: PacketDuration;
     data1: number | null = null;
     data2: number | null = null;
+    frequency: number | null = null;
+    powerFactor: number | null = null;
+    pricePerKwh: number | null = null; 
+  
 
     constructor(data: DataView) {
         if (data.byteLength < 2 || data.getUint8(0) != START_OF_FRAME_BYTE1 || data.getUint8(1) != START_OF_FRAME_BYTE2) {
@@ -258,17 +266,31 @@ class Packet {
             this.current = data.getUint24(7) / 1000; // amps
             this.capacity = data.getUint24(10) * 10; // mAh
             this.energy = 0; // Wh
-
+            this.power = Math.round(100 * this.voltage * this.current) / 100; // W
         }
+
+        if (this.type == DEVICE_TYPE.AC) {
+            // Packet data based on https://github.com/CursedHardware/atorch-console/blob/master/docs/protocol-design.md
+            this.voltage = data.getUint24(4) / 10; // Voltage in volts
+            this.current = data.getUint24(7) / 1000; // Current in amps
+            this.power = data.getUint24(10) / 10; // Power in watts
+            this.energy = data.getUint32(13) / 100; // Energy in ....? kWh?
+            this.pricePerKwh = data.getUint24(17) / 100; // Price per kWh, add if needed
+            this.frequency = data.getUint16(20) / 10; // Frequency in hertz
+            this.powerFactor = data.getUint16(22) / 1000; // Power factor (unitless)
+            this.temp = data.getUint16(24); // Temperature in Celsius
+            this.backlightTime = data.getUint8(30); // Backlight time in seconds?
+          }
         else {
+            // USB
             this.voltage = data.getUint24(4) / 100; // volts
             this.current = data.getUint24(7) / 100; // amps
             this.capacity = data.getUint24(10); // mAh
             this.energy = data.getUint32(13) / 100; // Wh
+            this.power = Math.round(100 * this.voltage * this.current) / 100; // W
         }
-
-        this.power = Math.round(100 * this.voltage * this.current) / 100; // W
-        this.resistance = Math.round(100 * this.voltage / this.current) / 100; // resistance 
+        // TODO Create resistance calculation for AC and insert above
+        this.resistance = Math.round(this.voltage / this.current); // resistance 
         
         // other types untested
         if (this.type == DEVICE_TYPE.USB) {
@@ -276,14 +298,16 @@ class Packet {
             this.data2 = data.getUint16(19) / 100; // D+
         }
 
-        if (this.type == DEVICE_TYPE.DC) {
+        // Temp
+        if (this.type == DEVICE_TYPE.DC || this.type == DEVICE_TYPE.AC) {
             this.temp = data.getUint16(24); // Temp (C)
         }
         else {
             this.temp = data.getUint16(21); // Temp (C)
         }
 
-        if (this.type == DEVICE_TYPE.DC) {
+        // Runtime
+        if (this.type == DEVICE_TYPE.DC || this.type == DEVICE_TYPE.AC) {
             this.duration_raw = {
                 hour: data.getUint16(26),
                 minute: data.getUint8(28),
@@ -315,7 +339,7 @@ class Packet {
         // console.log("payload for crc", buf2hex(payload));
         // const checksum = payload.reduce((acc, item) => (acc + item) & 0xff, 0) ^ 0x44;
         // p.checksum_valid = (p.checksum == checksum);
-        //p.checksum_valid = Packet.validateChecksum(data.buffer);
+        // p.checksum_valid = Packet.validateChecksum(data.buffer);
     }
 
     string(): string {
