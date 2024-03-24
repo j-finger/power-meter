@@ -7,11 +7,11 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.min.css">
   <link rel="stylesheet" href="./css/style.css">
   <!-- TODO Include "BLE/Wifi" in title -->
-  <title>USB BLE/Wifi Power Meter</title>
+  <title id="window-description">USB/BLE/Wifi Power Meter</title>
 </head>
 
 <body>
-  <h1>USB BLE/Wifi Power Meter</h1>
+  <h1 id="title-description">USB/BLE/Wifi Power Meter</h1>
   <h2 id="warnBlock">Your Browser does not appear to support WebBluetooth</h2>
   <h3>Information</h3>
   <p>Web app data logger for Atorch power meters.</p>
@@ -24,7 +24,9 @@
   <button id="reset" onclick="Reset()">Reset</button>
   <button id="pause" onclick="Pause()">Pause</button>
   <button id="save" onclick="Save()">Save</button>
-  <input type="number" id="length" value="4"/>
+  <br>
+  <br>
+  <input type="number" id="length" value="12"/>
   <button id="setLength" onclick="setLength()">Set measure length (h)</button>
   <label>Reconnect if signal lost: </label>
   <label class="switch">
@@ -57,17 +59,17 @@
         <td id="power"></td>
         <td id="power_stats"></td>
       </tr>
-    <tr style="color: darkBlue">
+    <tr id="row-powerFactor" style="color: darkBlue">
         <td>Power Factor</td>
         <td id="powerFactor"></td>
         <td id="powerFactor_stats"></td>
     </tr>
-    <tr style="color: darkGreen">
+    <tr id="row-frequency" style="color: darkGreen">
         <td>Frequency</td>
         <td id="frequency"></td>
         <td id="frequency_stats"></td>
     </tr>
-    <tr style="color: darkRed">
+    <tr id="row-price" style="color: darkRed">
         <td>Price</td>
         <td id="price"></td>
         <td id="price_stats"></td>
@@ -77,7 +79,7 @@
         <td id="energy"></td>
         <td id="energy_stats"></td>
       </tr>
-      <tr style="color: lightBlue">
+      <tr id="row-capacity" style="color: lightBlue">
         <td>Capacity</td>
         <td id="capacity"></td>
         <td id="capacity_stats"></td>
@@ -92,7 +94,7 @@
         <td id="temperature"></td>
         <td id="temperature_stats"></td>
       </tr>
-      <tr style="color: lightGreen">
+      <tr id="row-data" style="color: lightGreen">
         <td>USB Data -/+</td>
         <td id="usb"></td>
         <td id="usb_stats"></td>
@@ -107,7 +109,7 @@
 
   <hr>
 
-  <div id="graph"></div>
+  <div id="graph" class="hidden"></div>
 
   <dialog id="dialog">
     <header>Error</header>
@@ -120,10 +122,9 @@
   </dialog>
 
   <footer style="text-align: right;">
-    <a target="_blank" href="https://twitter.com/lanrat">Made by @LANRAT</a>
+    <a target="_blank" href="https://github.com/j-finger/power-meter">Forked for use with S1W by Jacob @ Finmac</a>
     <br>
-    <a target="_blank" href="https://github.com/lanrat/usb-meter">Source
-      Code</a>
+    <a target="_blank" href="https://github.com/lanrat/usb-meter">Source Code by @LANRAT</a>
   </footer>
   <script src="https://cdn.plot.ly/plotly-2.14.0.min.js" defer></script>
   <script src="./js/meter.js" defer></script>

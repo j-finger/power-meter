@@ -65,3 +65,7 @@ input[type="number"] {
   .slider.round:before {
     border-radius: 50%;
   }
+
+  .hidden {
+    display: none;
+  }

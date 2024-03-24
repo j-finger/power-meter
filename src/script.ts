@@ -1,7 +1,6 @@
 // TODO List
 
 // - Phase 2
-// - Add AC checking and removal of DC variables
 // - Print device type i.e. AC vs DC vs USB
 
 // Phase 3
@@ -16,6 +15,11 @@
 // - Better function names and comments
 
 /* Global Values and Variables*/
+// Titling
+const windowDescription = document.getElementById("window-description")!;
+const titleDescription = document.getElementById("title-description")!;
+
+
 // Buttons
 const goButton = document.getElementById("go")!;
 const pauseElem = document.getElementById("pause")!;
@@ -55,6 +59,18 @@ const temperatureStatsElem = document.getElementById("temperature_stats")!;
 const timeStatsElem = document.getElementById("time_stats")!;
 const usbStatsElem = document.getElementById("usb_stats")!;
 
+/* Row Display Options */
+// AC Rows
+const rowPowerFactor = document.getElementById("row-powerFactor")!;
+const rowFrequency = document.getElementById("row-frequency")!;
+const rowPrice = document.getElementById("row-price")!;
+// DC and USB Rows
+const rowCapacity = document.getElementById("row-capacity")!;
+const rowData = document.getElementById("row-data")!;
+
+// Graph Display Options
+const graphVisibility = document.getElementById("graph")!;
+
 const graphDiv = 'graph';
 
 /* Functions */
@@ -85,7 +101,7 @@ class state {
     static meter = new Meter();
     static data_paused = false;
     static data: StateData = {} as StateData;
-    static max_data = 60 * 60 * 4; // ~4 hour
+    static max_data = 60 * 60 * 12; // ~12 hour
     static device: BluetoothDevice | null = null;
     static reconnect = reconnectSwitch.checked;
 
@@ -156,11 +172,40 @@ class state {
         // Add AC variables and check for DC
         if (p.type == DEVICE_TYPE.AC) {
             var data = [[p.voltage], [p.current], [p.power], [p.powerFactor], [p.energy], [p.resistance], [p.temp]];
+            titleDescription.innerText = windowDescription.innerText = "AC Power Meter";
+            rowPowerFactor.classList.remove('hidden');
+            rowFrequency.classList.remove('hidden');
+            rowData.classList.add('hidden'); // rowPrice.classList.remove('hidden'); // Having trouble recieving price data
+            rowPrice.classList.add('hidden');
+            rowCapacity.classList.add('hidden');
+            
+            graphVisibility.classList.remove('hidden');
+        }
+        else if (p.type == DEVICE_TYPE.DC || p.type == DEVICE_TYPE.USB){
+            var data = [[p.voltage], [p.current], [p.power], [p.powerFactor], [p.energy], [p.capacity], [p.resistance], [p.temp], [p.data1], [p.data2]];
+            titleDescription.innerText = windowDescription.innerText = "USB/DC Power Meter";
+            rowCapacity.classList.remove('hidden');
+            rowData.classList.remove('hidden');
+            rowPowerFactor.classList.add('hidden');
+            rowFrequency.classList.add('hidden');
+            rowPrice.classList.add('hidden');
         }
         else {
-            var data = [[p.voltage], [p.current], [p.power], [p.powerFactor], [p.energy], [p.capacity], [p.resistance], [p.temp], [p.data1], [p.data2]];
+            var data = [[p.voltage], [p.current], [p.power], [p.powerFactor], [p.frequency], [p.energy], [p.capacity], [p.resistance], [p.temp], [p.data1], [p.data2]];
         };
-        
+
+        // Update the background color of the rows when some are hidden
+        let rows = document.querySelectorAll('tr');
+        let visibleRows = Array.from(rows).filter(row => !row.classList.contains('hidden'));
+        visibleRows.forEach((row, index) => {
+            if (index % 2 === 0) {
+                row.style.backgroundColor = 'lightgray';  // Replace with the actual color for even rows
+            } else {
+                row.style.backgroundColor = 'white';  // Replace with the actual color for odd rows
+            }
+        });
+
+        // Plot Graph
         Plotly.extendTraces(graphDiv, {
             y: data,
             x: new Array(data.length).fill([p.time]),
@@ -347,7 +392,6 @@ function initPlot() {
             x: [],
             mode: 'lines',
             line: { color: 'darkRed' },
-            visible: 'legendonly',
         },
         {
             name: "Current",
@@ -355,7 +399,6 @@ function initPlot() {
             x: [],
             mode: 'lines',
             line: { color: 'green' },
-            visible: 'legendonly',
         },
         {
             name: "Power",
@@ -363,15 +406,6 @@ function initPlot() {
             x: [],
             mode: 'lines',
             line: { color: 'red' },
-            // visible: 'legendonly',
-        },
-        {
-            name: "Power Factor",
-            y: [],
-            x: [],
-            mode: 'lines',
-            line: { color: 'orange' },
-            visible: 'legendonly',
         },
         {
             name: "Energy",
