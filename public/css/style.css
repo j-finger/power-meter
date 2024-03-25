@@ -1,6 +1,34 @@
+/* TODO
+- Move away from beige colourway to something more appropriate - Apple Esque colourway
+- Make the input fields a different colour
+*/
+
 input[type="number"] {
     display: inline-block;
     max-width: 50px;
+    background-color: linen;
+}
+
+input[type="text"] {
+    display: inline-block;
+    max-width: 200px;
+    background-color: linen;
+}
+button {
+  background-color: linen;
+  color: black; /* Choose a color that provides good contrast with ivory */
+  border: none;
+  /* padding: 15px 32px; */
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  /* margin: 4px 2px; */
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: cornsilk; /* Change this to the color you want when hovering */
 }
 
 /* The switch - the box around the slider */
@@ -26,7 +54,7 @@ input[type="number"] {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #ccc;
+    background-color: gainsboro;
     -webkit-transition: .4s;
     transition: .4s;
   }
@@ -38,17 +66,17 @@ input[type="number"] {
     width: 26px;
     left: 4px;
     bottom: 4px;
-    background-color: white;
+    background-color: linen;
     -webkit-transition: .4s;
     transition: .4s;
   }
-  
+
   input:checked + .slider {
-    background-color: #2196F3;
+    background-color: #ff0a6f;
   }
   
   input:focus + .slider {
-    box-shadow: 0 0 1px #2196F3;
+    box-shadow: 0 0 3px rgb(246, 68, 68);
   }
   
   input:checked + .slider:before {
@@ -59,7 +87,7 @@ input[type="number"] {
   
   /* Rounded sliders */
   .slider.round {
-    border-radius: 34px;
+    border-radius: 40px;
   }
   
   .slider.round:before {
@@ -69,3 +97,38 @@ input[type="number"] {
   .hidden {
     display: none;
   }
+
+  /* body {
+    background-image: url('basketball.png');
+    background-repeat: repeat;
+  } */
+
+tr:nth-child(even) {
+    background-color: linen; /* Change this to the color you want for even rows */
+}
+
+tr:nth-child(odd) {
+    background-color: floralwhite; /* Change this to the color you want for odd rows */
+}
+
+body {
+  font-weight: bold;
+  background-color: ivory; /* Replace 'ivory' with any predefined named color you want */
+}
+
+body::after {
+  content: "";
+  background: url('basketball.png');
+  opacity: 0.07; /* Adjust to the level of transparency you want, 0 is fully transparent, 1 is fully opaque */
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  position: absolute;
+  z-index: -1;   
+  background-repeat: repeat;
+}
+
+th {
+  font-weight: bolder;
+}

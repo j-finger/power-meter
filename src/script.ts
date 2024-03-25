@@ -3,6 +3,8 @@
 // - Better function names and comments
 // - Add a function to convert the time from seconds to a more readable format
 // - Change output file headers based on device type
+// - Add autosave on lost session functionality
+// - Add better colours to the graph and table
 
 /* Global Values and Variables*/
 // Title
@@ -63,6 +65,22 @@ const rowData = document.getElementById("row-data")!;
 // Graph Display Options
 const graphVisibility = document.getElementById("graph")!;
 const graphDiv = 'graph';
+
+// Colour Table
+const colorConfig = {
+    voltage: 'ffc000',
+    current: 'fda456',
+    power: 'ff4948',
+    powerFactor: 'ff0a6f',
+    resistance: '17642B',
+    frequency: '33CA7F',
+    energy: '9BE8B0',
+    capacity: '17B890',
+    price: '00A7E1',
+    time: '84DCC6',
+    temperature: '003459',
+    data: '007EA7',
+};
 
 /* Functionality */
 function sleep(ms: number) {
@@ -194,9 +212,9 @@ class state {
         let visibleRows = Array.from(rows).filter(row => !row.classList.contains('hidden'));
         visibleRows.forEach((row, index) => {
             if (index % 2 === 0) {
-                row.style.backgroundColor = 'lightgray';  // Replace with the actual color for even rows
+                row.style.backgroundColor = 'linen';  // Replace with the actual color for even rows
             } else {
-                row.style.backgroundColor = 'white';  // Replace with the actual color for odd rows
+                row.style.backgroundColor = 'floralwhite';  // Replace with the actual color for odd rows
             }
         });
 
@@ -377,6 +395,7 @@ function Reset() {
 // Add AC checking and removal of DC variables
 function initPlot() {
    
+    // Plot Configuration
     const layout = {
         autosize: true,
         showlegend: true,
@@ -387,7 +406,22 @@ function initPlot() {
         displaylogo: false,
         responsive: true,
     };
-    // Update graph based on device type
+
+    // Trace Colour Configuration
+    const traceConfig = [
+        { name: "Volts", color: colorConfig.voltage },
+        { name: "Current", color: colorConfig.current },
+        { name: "Power", color: colorConfig.power },
+        { name: "Power Factor", color: colorConfig.powerFactor },
+        { name: "Energy", color: colorConfig.energy },
+        { name: "Capacity", color: colorConfig.capacity },
+        { name: "Resistance", color: colorConfig.resistance },
+        { name: "Temperature", color: colorConfig.temperature },
+        { name: "USB D-", color: colorConfig.data },
+        { name: "USB D+", color: colorConfig.data },
+    ];
+
+    // Choose graph elements based on device type
     // DC graph variables
      if (DEVICE_TYPE.DC || DEVICE_TYPE.USB) {
         Plotly.newPlot(graphDiv, [{
@@ -395,28 +429,28 @@ function initPlot() {
             y: [],
             x: [],
             mode: 'lines',
-            line: { color: 'darkRed' },
+            line: { color: `#${colorConfig.voltage}` },
         },
         {
             name: "Current",
             y: [],
             x: [],
             mode: 'lines',
-            line: { color: 'green' },
+            line: { color: `#${colorConfig.current}` },
         },
         {
             name: "Power",
             y: [],
             x: [],
             mode: 'lines',
-            line: { color: 'red' },
+            line: { color: `#${colorConfig.power}` },
         },
         {
             name: "Energy",
             y: [],
             x: [],
             mode: 'lines',
-            line: { color: 'purple' },
+            line: { color: `#${colorConfig.energy}` },
             visible: 'legendonly',
         },
         {
@@ -424,7 +458,7 @@ function initPlot() {
             y: [],
             x: [],
             mode: 'lines',
-            line: { color: 'lightblue' },
+            line: { color: `#${colorConfig.capacity}` },
             visible: 'legendonly',
         },
         {
@@ -432,7 +466,7 @@ function initPlot() {
             y: [],
             x: [],
             mode: 'lines',
-            line: { color: 'blue' },
+            line: { color: `#${colorConfig.resistance}` },
             visible: 'legendonly',
         },
         {
@@ -440,7 +474,7 @@ function initPlot() {
             y: [],
             x: [],
             mode: 'lines',
-            line: { color: 'turquoise' },
+            line: { color: `#${colorConfig.temperature}` },
             visible: 'legendonly',
         },
         {
@@ -448,7 +482,7 @@ function initPlot() {
             y: [],
             x: [],
             mode: 'lines',
-            line: { color: 'lightGreen' },
+            line: { color: `#${colorConfig.data}` },
             visible: 'legendonly',
         },
         {
@@ -456,7 +490,7 @@ function initPlot() {
             y: [],
             x: [],
             mode: 'lines',
-            line: { color: 'lightGreen' },
+            line: { color: `#${colorConfig.data}` },
             visible: 'legendonly',
         },
         ], layout, config);
@@ -469,7 +503,7 @@ function initPlot() {
             y: [],
             x: [],
             mode: 'lines',
-            line: { color: 'darkRed' },
+            line: { color: `#${colorConfig.voltage}` },
             visible: 'legendonly',
         },
         {
@@ -477,7 +511,7 @@ function initPlot() {
             y: [],
             x: [],
             mode: 'lines',
-            line: { color: 'green' },
+            line: { color: `#${colorConfig.current}` },
             visible: 'legendonly',
         },
         {
@@ -485,7 +519,7 @@ function initPlot() {
             y: [],
             x: [],
             mode: 'lines',
-            line: { color: 'red' },
+            line: { color: `#${colorConfig.power}` },
             // visible: 'legendonly',
         },
         {
@@ -493,7 +527,7 @@ function initPlot() {
             y: [],
             x: [],
             mode: 'lines',
-            line: { color: 'orange' },
+            line: { color: `#${colorConfig.powerFactor}` },
             visible: 'legendonly',
         },
         {
@@ -501,7 +535,7 @@ function initPlot() {
             y: [],
             x: [],
             mode: 'lines',
-            line: { color: 'purple' },
+            line: { color: `#${colorConfig.energy}` },
             visible: 'legendonly',
         },
         {
@@ -509,7 +543,7 @@ function initPlot() {
             y: [],
             x: [],
             mode: 'lines',
-            line: { color: 'blue' },
+            line: { color: `#${colorConfig.resistance}` },
             visible: 'legendonly',
         },
         {
@@ -517,7 +551,7 @@ function initPlot() {
             y: [],
             x: [],
             mode: 'lines',
-            line: { color: 'turquoise' },
+            line: { color: `#${colorConfig.temperature}` },
             visible: 'legendonly',
         },
         ], layout, config);
@@ -525,6 +559,8 @@ function initPlot() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+
+    // Checks if the "bluetooth" property exists in the navigator object. If it does, it hides the warnBlockElem element. 
     if ("bluetooth" in navigator) {
         warnBlockElem.hidden = true;
     } else {
@@ -536,8 +572,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     state.meter.onDisconnectCallback = state.stop.bind(state);
     state.meter.onStartCallback = state.start.bind(state);
 
-    // init graph
+    // Initialise graph
     initPlot();
+
+    // Set Table Colours
+    document.getElementById('row-voltage')?.style.setProperty('color', `#${colorConfig.voltage}`);
+    document.getElementById('row-current')?.style.setProperty('color', `#${colorConfig.current}`);
+    document.getElementById('row-power')?.style.setProperty('color', `#${colorConfig.power}`);
+    document.getElementById('row-powerFactor')?.style.setProperty('color', `#${colorConfig.powerFactor}`);
+    document.getElementById('row-frequency')?.style.setProperty('color', `#${colorConfig.frequency}`);
+    document.getElementById('row-price')?.style.setProperty('color', `#${colorConfig.price}`);
+    document.getElementById('row-energy')?.style.setProperty('color', `#${colorConfig.energy}`);
+    document.getElementById('row-capacity')?.style.setProperty('color', `#${colorConfig.capacity}`);
+    document.getElementById('row-resistance')?.style.setProperty('color', `#${colorConfig.resistance}`);
+    document.getElementById('row-temperature')?.style.setProperty('color', `#${colorConfig.temperature}`);
+    document.getElementById('row-data')?.style.setProperty('color', `#${colorConfig.data}`);
+    document.getElementById('row-time')?.style.setProperty('color', `#${colorConfig.time}`);
 });
 
 function Save() {
